@@ -2,7 +2,7 @@ import ballerina/http;
 import ballerina/uuid;
 import ballerina/time;
 import ballerina/log;
-import ballerina/encoding;
+import ballerina/lang.array;
 import ballerina/lang.'string as strings;
 
 // ── Types ─────────────────────────────────────────
@@ -57,7 +57,7 @@ listener http:Listener httpListener = new (8090);
 service /api/v1 on httpListener {
 
     resource function get health() returns json {
-        return {status: "healthy", service: "task-tracker-api", version: "1.0.0"};
+        return {status: "healthy", 'service: "task-tracker-api", 'version: "1.0.0"};
     }
 
     resource function get tasks(http:Request req)
@@ -128,12 +128,14 @@ service /api/v1 on httpListener {
         if existing.userId != userId { return http:FORBIDDEN; }
         string now = time:utcToString(time:utcNow());
         Task updated = {
-            ...existing,
+            id:          existing.id,
+            userId:      existing.userId,
             title:       body.title       ?: existing.title,
             description: body.description ?: existing.description,
             status:      body.status      ?: existing.status,
             priority:    body.priority    ?: existing.priority,
             dueDate:     body.dueDate     ?: existing.dueDate,
+            createdAt:   existing.createdAt,
             updatedAt:   now
         };
         taskStore[taskId] = updated;
@@ -177,8 +179,11 @@ function extractSubFromJwt(string token) returns string|error {
         return error("Invalid JWT format");
     }
 
-    // Decode the payload (middle part) using encoding:decodeBase64Url
-    byte[]|error decoded = encoding:decodeBase64Url(parts[1]);
+    // Decode the payload (middle part) — pad to a valid base64 length first
+    string padded = parts[1] + string:'join("", ...from int _ in 0 ..< (4 - parts[1].length() % 4) % 4 select "=");
+    // Replace URL-safe chars with standard base64 chars
+    string b64 = re`-`.replaceAll(re`_`.replaceAll(padded, "/"), "+");
+    byte[]|error decoded = array:fromBase64(b64);
     if decoded is error {
         return error("Failed to base64url-decode JWT payload: " + decoded.message());
     }

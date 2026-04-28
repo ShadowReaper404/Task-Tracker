@@ -1,4 +1,4 @@
-# TaskFlow — WSO2 Internship Project
+# TaskFlow — WSO2 Project
 
 A cloud-native task tracker built with:
 
