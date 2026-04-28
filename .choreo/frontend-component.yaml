@@ -1,0 +1,25 @@
+# Choreo component descriptor for the React frontend
+apiVersion: core.choreo.dev/v1beta1
+kind: Component
+metadata:
+  name: task-tracker-web
+  annotations:
+    core.choreo.dev/display-name: "Task Tracker Web App"
+    core.choreo.dev/description: "React SPA secured with Asgardeo"
+spec:
+  type: webApplication
+  source:
+    gitRepositoryRef:
+      branch: main
+    buildPack:
+      name: nodejs
+      context: frontend       # path inside the repo
+      buildCommand: npm run build
+      outputDirectory: dist
+      nodeVersion: "20"
+  endpoints:
+    - name: web
+      port: 80
+      type: REST
+      networkVisibilities:
+        - Public

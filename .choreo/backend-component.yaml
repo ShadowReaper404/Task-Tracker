@@ -1,0 +1,25 @@
+# Choreo component descriptor for the Ballerina backend
+# Place this file at the repo root or in .choreo/ folder when deploying
+
+apiVersion: core.choreo.dev/v1beta1
+kind: Component
+metadata:
+  name: task-tracker-api
+  annotations:
+    core.choreo.dev/display-name: "Task Tracker API"
+    core.choreo.dev/description: "Ballerina REST API for task management"
+spec:
+  type: service
+  source:
+    gitRepositoryRef:
+      branch: main
+    buildPack:
+      name: ballerina
+      context: backend        # path to Ballerina.toml inside the repo
+  endpoints:
+    - name: http
+      port: 8090
+      type: REST
+      networkVisibilities:
+        - Public
+      schemaFilePath: ""
